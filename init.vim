@@ -46,7 +46,6 @@ Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'elmcast/elm-vim'
-Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 Plug 'zchee/deoplete-jedi'
 Plug 'SirVer/ultisnips'
 Plug 'mhartington/deoplete-typescript'
@@ -54,8 +53,10 @@ Plug 'mxw/vim-jsx'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'scrooloose/nerdcommenter'
-Plug 'benjie/neomake-local-eslint.vim'
-
+Plug 'ervandew/supertab'
+Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'] }
+Plug 'carlitux/deoplete-ternjs', { 'for': ['javascript', 'javascript.jsx'] }
+Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
 
 let g:make = 'gmake'
 if system('uname -o') =~ '^GNU/'
@@ -596,9 +597,18 @@ else
 endif
 
 " deoplete settings
+set completeopt=longest,menuone,preview
+let g:deoplete#sources = {}
+let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
+let g:tern#command = ['tern']
+let g:tern#arguments = ['--persistent']
 let g:deoplete#enable_at_startup = 1
-let g:deoplete#sources#tss#javascript_support = 1
 let g:deoplete#omni_patterns = {}
+let g:deoplete#omni#functions = {}
+let g:deoplete#omni#functions.javascript = [
+  \ 'tern#Complete',
+  \ 'jspc#omni'
+  \]
 
 " jsx settings
 let g:jsx_ext_required = 0
@@ -608,3 +618,6 @@ let g:deoplete#omni_patterns.elm = '\.'
 let g:elm_detailed_complete = 1
 
 let g:neomake_javascript_enabled_makers = ['eslint']
+autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
+let g:UltiSnipsExpandTrigger="<C-j>"
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
