@@ -1,3 +1,6 @@
+"*****************************************************************************
+"" Vim-PLug core
+"*****************************************************************************
 if has('vim_starting')
   set nocompatible               " Be iMproved
 endif
@@ -5,7 +8,7 @@ endif
 let vimplug_exists=expand('~/.config/nvim/autoload/plug.vim')
 
 let g:vim_bootstrap_langs = "html,javascript,python"
-let g:vim_bootstrap_editor = "nvim"				" nvim or vim
+let g:vim_bootstrap_editor = "nvim"             " nvim or vim
 
 if !filereadable(vimplug_exists)
   echo "Installing Vim-Plug..."
@@ -19,15 +22,24 @@ endif
 " Required:
 call plug#begin(expand('~/.config/nvim/plugged'))
 
+"*****************************************************************************
+"" Plug install packages
+"*****************************************************************************
+Plug 'ajh17/Spacegray.vim'
+Plug 'gavocanov/vim-js-indent', { 'for': ['javascript', 'javascript.jsx'] }
+Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'neomake/neomake'
+Plug 'othree/javascript-libraries-syntax.vim', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'scrooloose/nerdtree'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
+Plug 'ryanoasis/vim-devicons'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'airblade/vim-gitgutter'
+Plug 'sheerun/vim-polyglot'
 Plug 'vim-scripts/grep.vim'
 Plug 'vim-scripts/CSApprox'
 Plug 'bronson/vim-trailing-whitespace'
@@ -36,19 +48,20 @@ Plug 'majutsushi/tagbar'
 Plug 'scrooloose/syntastic'
 Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
-Plug 'sheerun/vim-polyglot'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-jedi'
+Plug 'SirVer/ultisnips'
+Plug 'mxw/vim-jsx', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'scrooloose/nerdcommenter'
-Plug 'benjie/neomake-local-eslint.vim'
-Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
-Plug 'ryanoasis/vim-devicons'
 Plug 'ervandew/supertab'
+Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern', 'for': ['javascript', 'javascript.jsx'] }
-Plug 'ternjs/tern_for_vim'
+Plug 'benjie/neomake-local-eslint.vim'
+
+autocmd! BufWritePost,BufEnter * Neomake
 
 let g:make = 'gmake'
-if exists('make')
+if system('uname -o') =~ '^GNU/'
         let g:make = 'make'
 endif
 Plug 'Shougo/vimproc.vim', {'do': g:make}
@@ -69,15 +82,12 @@ endif
 
 Plug 'honza/vim-snippets'
 
-"" Color
-Plug 'ajh17/Spacegray.vim'
-
 "*****************************************************************************
 "" Custom bundles
 "*****************************************************************************
-
 " html
 "" HTML Bundle
+Plug 'vim-scripts/HTML-AutoCloseTag'
 Plug 'hail2u/vim-css3-syntax'
 Plug 'gorodinskiy/vim-coloresque'
 Plug 'tpope/vim-haml'
@@ -87,7 +97,6 @@ Plug 'mattn/emmet-vim'
 " javascript
 "" Javascript Bundle
 Plug 'jelera/vim-javascript-syntax'
-Plug 'mxw/vim-jsx'
 Plug 'elzr/vim-json'
 
 
@@ -100,8 +109,8 @@ Plug 'davidhalter/jedi-vim'
 "*****************************************************************************
 
 "" Include user's extra bundle
-if filereadable(expand("~/.config/nvim/local_bundles.vim"))
-  source ~/.config/nvim/local_bundles.vim
+if filereadable(expand("~/.config/nvimrc.local.bundles"))
+  source ~/.config/nvimrc.local.bundles
 endif
 
 call plug#end()
@@ -163,6 +172,10 @@ syntax on
 set ruler
 set number
 
+if (has("termguicolors"))
+ set termguicolors
+endif
+
 let no_buffers_menu=1
 if !exists('g:not_finish_vimplug')
   colorscheme spacegray
@@ -175,7 +188,8 @@ set gfn=Monospace\ 10
 
 if has("gui_running")
   if has("gui_mac") || has("gui_macvim")
-    set guifont=Menlo:h12
+"    set guifont=OperatorMono:12
+	set guifont=Droid\ Sans\ Mono\ for\ Powerline\ Plus\ Nerd\ File\ Types:h11
     set transparency=7
   endif
 else
@@ -186,6 +200,7 @@ else
   let g:indentLine_concealcursor = 0
   let g:indentLine_char = '┆'
   let g:indentLine_faster = 1
+
 
 endif
 
@@ -218,7 +233,10 @@ let g:airline#extensions#syntastic#enabled = 1
 let g:airline#extensions#branch#enabled = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tagbar#enabled = 1
-let g:airline_skip_empty_sections = 1
+let g:airline_section_y = '%{substitute(getcwd(), expand("$HOME"), "~", "g")}'  "Set relative path
+let g:airline_powerline_fonts = 1
+
+
 
 "*****************************************************************************
 "" Abbreviations
@@ -303,14 +321,14 @@ augroup vimrc-make-cmake
   autocmd BufNewFile,BufRead CMakeLists.txt setlocal filetype=cmake
 augroup END
 
-set autoread
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
+
+set autoread
 
 "*****************************************************************************
 "" Mappings
 "*****************************************************************************
-
 "" Split
 noremap <Leader>h :<C-u>split<CR>
 noremap <Leader>v :<C-u>vsplit<CR>
@@ -379,6 +397,9 @@ let g:syntastic_style_error_symbol = '✗'
 let g:syntastic_style_warning_symbol = '⚠'
 let g:syntastic_auto_loc_list=1
 let g:syntastic_aggregate_errors = 1
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+
 
 " Tagbar
 nmap <silent> <F4> :TagbarToggle<CR>
@@ -475,22 +496,18 @@ let g:jedi#smart_auto_mappings = 0
 
 " syntastic
 let g:syntastic_python_checkers=['python', 'flake8']
+let g:syntastic_javascript_checkers = ['eslint']
 
 " vim-airline
 let g:airline#extensions#virtualenv#enabled = 1
-
-" Syntax highlight
-" Default highlight is better than polyglot
-let g:polyglot_disabled = ['python']
-let python_highlight_all = 1
 
 
 "*****************************************************************************
 "*****************************************************************************
 
 "" Include user's local vim config
-if filereadable(expand("~/.config/nvim/local_init.vim"))
-  source ~/.config/nvim/local_init.vim
+if filereadable(expand("~/.config/nvimrc.local"))
+  source ~/.config/nvimrc.local
 endif
 
 "*****************************************************************************
@@ -533,57 +550,32 @@ else
   let g:airline_symbols.linenr = ''
 endif
 
-let g:spacegray_underline_search = 1
-let g:spacegray_italicize_comments = 1
-
-let g:jsx_ext_required = 0
-let g:used_javascript_libs = 'react,d3,jquery,jasmine'
-
-"deoplete
+" deoplete settings
+set completeopt=longest,menuone,preview
+let g:deoplete#sources = {}
+let g:deoplete#sources['javascript.jsx'] = ['file', 'ultisnips', 'ternjs']
+let g:tern#command = ['tern']
+let g:tern#arguments = ['--persistent']
 let g:deoplete#enable_at_startup = 1
-"let g:python_host_prog = '/full/path/to/neovim2/bin/python'
-"let g:python3_host_prog = '/full/path/to/neovim3/bin/python'
-
-let g:NERDSpaceDelims = 1
-let g:neomake_javascript_enabled_makers = ['eslint']
-let g:neomake_jsx_enabled_makers = ['eslint']
-autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
-
-let python_highlight_all = 1
-let g:tern_request_timeout = 1
-autocmd! BufWritePost * Neomake
-
-set autoindent
-let g:tern#command = ["tern"]
-let g:tern#arguments = ["--persistent"]
-let g:deoplete#sources#jedi#show_docstring = 1
-let g:deoplete#auto_complete_delay = 100
-if !exists('g:deoplete#omni#input_patterns')
-	let g:deoplete#omni#input_patterns = {}
-endif
-autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
-
-augroup MyOmnifuncs
-	autocmd!
-	autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
-	autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
-	autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
-	autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
-augroup end
-
+let g:deoplete#omni_patterns = {}
 let g:deoplete#omni#functions = {}
 let g:deoplete#omni#functions.javascript = [
   \ 'tern#Complete',
   \ 'jspc#omni'
   \]
 
+" jsx settings
+let g:jsx_ext_required = 0
 
-let g:deoplete#sources = {}
-let g:deoplete#sources['javascript'] = ['file', 'ternjs', 'ultisnips', 'buffer', ]
-let g:deoplete#sources['jsx'] = ['file', 'ternjs', 'ultisnips', 'buffer', ]
-let g:tern#command = ['tern']
-let g:tern#arguments = ['--persistent']
-inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<tab>"
+let g:neomake_javascript_enabled_makers = ['eslint']
+autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
+let g:UltiSnipsExpandTrigger="<C-j>"
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 
-autocmd FileType javascript,jsx nnoremap <silent> <buffer> gb :TernDef<CR>
+" vim jsx settings
+let g:jsx_ext_required = 0
 
+" javascript libraries syntax
+let g:used_javascript_libraries = 'react,d3,jquery,jasmine'
+let g:spacegray_underline_search = 1
+let g:spacegray_italicize_comments = 1
