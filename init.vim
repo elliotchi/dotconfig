@@ -25,8 +25,7 @@ call plug#begin(expand('~/.config/nvim/plugged'))
 "*****************************************************************************
 "" Plug install packages
 "*****************************************************************************
-Plug 'mhartington/oceanic-next'
-Plug 'benekastah/neomake'
+Plug 'neomake/neomake'
 Plug 'scrooloose/nerdtree'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'tpope/vim-commentary'
@@ -84,7 +83,7 @@ endif
 Plug 'honza/vim-snippets'
 
 "" Color
-Plug 'tomasr/molokai'
+Plug 'ajh17/Spacegray.vim'
 
 "*****************************************************************************
 "" Custom bundles
@@ -192,7 +191,7 @@ endif
 
 let no_buffers_menu=1
 if !exists('g:not_finish_vimplug')
-  colorscheme OceanicNext
+  colorscheme spacegray
 endif
 
 let g:oceanic_next_terminal_italic = 1
@@ -622,5 +621,4 @@ let g:elm_detailed_complete = 1
 
 let g:neomake_javascript_enabled_makers = ['eslint']
 autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
-let g:UltiSnipsExpandTrigger="<C-j>"
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"

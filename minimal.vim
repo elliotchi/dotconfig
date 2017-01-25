@@ -44,6 +44,8 @@ Plug 'benjie/neomake-local-eslint.vim'
 Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'ryanoasis/vim-devicons'
 Plug 'ervandew/supertab'
+Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern', 'for': ['javascript', 'javascript.jsx'] }
+Plug 'ternjs/tern_for_vim'
 
 let g:make = 'gmake'
 if exists('make')
@@ -302,6 +304,8 @@ augroup vimrc-make-cmake
 augroup END
 
 set autoread
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
 
 "*****************************************************************************
 "" Mappings
@@ -357,7 +361,7 @@ endif
 
 cnoremap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
 noremap <leader>b :CtrlPBuffer<CR>
-let g:ctrlp_map = '<leader>e'
+let g:ctrlp_map = '<C-p>'
 let g:ctrlp_open_new_file = 'r'
 let g:ctrlp_cache_dir = $HOME . '/.cache/ctrlp'
 
@@ -550,3 +554,36 @@ let g:tern_request_timeout = 1
 autocmd! BufWritePost * Neomake
 
 set autoindent
+let g:tern#command = ["tern"]
+let g:tern#arguments = ["--persistent"]
+let g:deoplete#sources#jedi#show_docstring = 1
+let g:deoplete#auto_complete_delay = 100
+if !exists('g:deoplete#omni#input_patterns')
+	let g:deoplete#omni#input_patterns = {}
+endif
+autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
+
+augroup MyOmnifuncs
+	autocmd!
+	autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+	autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+	autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+	autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+augroup end
+
+let g:deoplete#omni#functions = {}
+let g:deoplete#omni#functions.javascript = [
+  \ 'tern#Complete',
+  \ 'jspc#omni'
+  \]
+
+
+let g:deoplete#sources = {}
+let g:deoplete#sources['javascript'] = ['file', 'ternjs', 'ultisnips', 'buffer', ]
+let g:deoplete#sources['jsx'] = ['file', 'ternjs', 'ultisnips', 'buffer', ]
+let g:tern#command = ['tern']
+let g:tern#arguments = ['--persistent']
+inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<tab>"
+
+autocmd FileType javascript,jsx nnoremap <silent> <buffer> gb :TernDef<CR>
+
