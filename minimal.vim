@@ -27,7 +27,6 @@ call plug#begin(expand('~/.config/nvim/plugged'))
 "*****************************************************************************
 Plug 'ajh17/Spacegray.vim'
 Plug 'gavocanov/vim-js-indent', { 'for': ['javascript', 'javascript.jsx'] }
-Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'neomake/neomake'
 Plug 'othree/javascript-libraries-syntax.vim', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'scrooloose/nerdtree'
@@ -51,11 +50,13 @@ Plug 'avelino/vim-bootstrap-updater'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-jedi'
 Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
 Plug 'mxw/vim-jsx', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'scrooloose/nerdcommenter'
 Plug 'ervandew/supertab'
 Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern', 'for': ['javascript', 'javascript.jsx'] }
+Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'benjie/neomake-local-eslint.vim'
 
 autocmd! BufWritePost,BufEnter * Neomake
@@ -80,7 +81,6 @@ if v:version >= 704
   Plug 'FelikZ/ctrlp-py-matcher'
 endif
 
-Plug 'honza/vim-snippets'
 
 "*****************************************************************************
 "" Custom bundles
@@ -571,6 +571,7 @@ let g:neomake_javascript_enabled_makers = ['eslint']
 autocmd FileType javascript let g:SuperTabDefaultCompletionType = "<c-x><c-o>"
 let g:UltiSnipsExpandTrigger="<C-j>"
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+set completeopt-=preview
 
 " vim jsx settings
 let g:jsx_ext_required = 0
