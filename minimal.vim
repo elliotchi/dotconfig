@@ -1,15 +1,11 @@
-" vim-bootstrap 9c1c51e
+" vim-bootstrap 
 
 "*****************************************************************************
 "" Vim-PLug core
 "*****************************************************************************
-if has('vim_starting')
-  set nocompatible               " Be iMproved
-endif
-
 let vimplug_exists=expand('~/.config/nvim/autoload/plug.vim')
 
-let g:vim_bootstrap_langs = "go,html,javascript,python"
+let g:vim_bootstrap_langs = "go,html,javascript,python,elixir,ruby,scala,typescript"
 let g:vim_bootstrap_editor = "nvim"				" nvim or vim
 
 if !filereadable(vimplug_exists)
@@ -19,7 +15,7 @@ if !filereadable(vimplug_exists)
   endif
   echo "Installing Vim-Plug..."
   echo ""
-  silent !\curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  silent exec "!\curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
   let g:not_finish_vimplug = "yes"
 
   autocmd VimEnter * PlugInstall
@@ -28,15 +24,14 @@ endif
 " Required:
 call plug#begin(expand('~/.config/nvim/plugged'))
 
+" Syntax highlight
+" Default highlight is better than polyglot
+let g:polyglot_disabled = ['python']
+let python_highlight_all = 1
+
 "*****************************************************************************
 "" Plug install packages
 "*****************************************************************************
-Plug 'w0rp/ale'
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-Plug 'zchee/deoplete-jedi'
-Plug 'wokalski/autocomplete-flow'
-Plug 'Shougo/neosnippet'
-Plug 'Shougo/neosnippet-snippets'
 Plug 'scrooloose/nerdtree'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'tpope/vim-commentary'
@@ -49,11 +44,19 @@ Plug 'vim-scripts/CSApprox'
 Plug 'bronson/vim-trailing-whitespace'
 Plug 'Raimondi/delimitMate'
 Plug 'majutsushi/tagbar'
+Plug 'w0rp/ale'
 Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
+Plug 'tpope/vim-rhubarb' " required by fugitive to :Gbrowse
 Plug 'scrooloose/nerdcommenter'
-Plug 'wakatime/vim-wakatime'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'zchee/deoplete-jedi'
+Plug 'ianks/vim-tsx'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'neovim/nvim-lspconfig'
+Plug 'puremourning/vimspector'
+
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 else
@@ -70,23 +73,22 @@ Plug 'Shougo/vimproc.vim', {'do': g:make}
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
 
-if v:version >= 703
-  Plug 'Shougo/vimshell.vim'
-endif
-
-if v:version >= 704
-  "" Snippets
-  Plug 'SirVer/ultisnips'
-endif
-
+"" Snippets
+Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 
 "" Color
-Plug 'robertmeta/nofrils'
+Plug 'morhetz/gruvbox'
+Plug 'enthudave/star_wars.vim'
 
 "*****************************************************************************
 "" Custom bundles
 "*****************************************************************************
+
+" elixir
+Plug 'elixir-lang/vim-elixir'
+Plug 'carlosgaldino/elixir-snippets'
+
 
 " go
 "" Go Lang Bundle
@@ -112,6 +114,28 @@ Plug 'davidhalter/jedi-vim'
 Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
 
 
+" ruby
+Plug 'tpope/vim-rails'
+Plug 'tpope/vim-rake'
+Plug 'tpope/vim-projectionist'
+Plug 'thoughtbot/vim-rspec'
+Plug 'ecomba/vim-ruby-refactoring'
+
+
+" scala
+if has('python')
+    " sbt-vim
+    Plug 'ktvoelker/sbt-vim'
+endif
+" vim-scala
+Plug 'derekwyatt/vim-scala'
+
+
+" typescript
+Plug 'leafgarland/typescript-vim'
+Plug 'HerringtonDarkholme/yats.vim'
+
+
 "*****************************************************************************
 "*****************************************************************************
 
@@ -133,17 +157,15 @@ filetype plugin indent on
 set encoding=utf-8
 set fileencoding=utf-8
 set fileencodings=utf-8
-set bomb
-set binary
 
 
 "" Fix backspace indent
 set backspace=indent,eol,start
 
-"" Tabs. May be overriten by autocmd rules
-set tabstop=2
+"" Tabs. May be overridden by autocmd rules
+set tabstop=4
 set softtabstop=0
-set shiftwidth=2
+set shiftwidth=4
 set expandtab
 
 "" Map leader to ,
@@ -157,10 +179,6 @@ set hlsearch
 set incsearch
 set ignorecase
 set smartcase
-
-"" Directories for swp files
-set nobackup
-set noswapfile
 
 set fileformats=unix,dos,mac
 
@@ -184,9 +202,12 @@ set ruler
 set number
 
 let no_buffers_menu=1
-if !exists('g:not_finish_vimplug')
-  colorscheme nofrils-dark
-endif
+" set background=dark
+
+silent! colorscheme star_wars
+hi! Normal ctermbg=NONE guibg=NONE
+hi! NonText ctermbg=NONE guibg=NONE
+
 
 set mousemodel=popup
 set t_Co=256
@@ -207,7 +228,7 @@ else
   let g:indentLine_char = '┆'
   let g:indentLine_faster = 1
 
-  
+
 endif
 
 
@@ -239,8 +260,9 @@ if exists("*fugitive#statusline")
 endif
 
 " vim-airline
-let g:airline_theme = 'monochrome'
+let g:airline_theme = 'star_wars'
 let g:airline#extensions#branch#enabled = 1
+let g:airline#extensions#ale#enabled = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tagbar#enabled = 1
 let g:airline_skip_empty_sections = 1
@@ -270,24 +292,19 @@ let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
 let g:NERDTreeWinSize = 50
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
 nnoremap <silent> <F2> :NERDTreeFind<CR>
-noremap <F3> :NERDTreeToggle<CR>
+nnoremap <silent> <F3> :NERDTreeToggle<CR>
+
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
 
 " grep.vim
-nnoremap <silent> <leader>g :Rgrep<CR>
+nnoremap <silent> <leader>f :Rgrep<CR>
 let Grep_Default_Options = '-IR'
 let Grep_Skip_Files = '*.log *.db'
 let Grep_Skip_Dirs = '.git node_modules'
 
-" vimshell.vim
-let g:vimshell_user_prompt = 'fnamemodify(getcwd(), ":~")'
-let g:vimshell_prompt =  '$ '
-
 " terminal emulation
-if g:vim_bootstrap_editor == 'nvim'
-  nnoremap <silent> <leader>sh :terminal<CR>
-else
-  nnoremap <silent> <leader>sh :VimShellCreate<CR>
-endif
+nnoremap <silent> <leader>sh :terminal<CR>
 
 "*****************************************************************************
 "" Functions
@@ -329,7 +346,6 @@ augroup vimrc-make-cmake
 augroup END
 
 set autoread
-au FocusGained * :checktime
 
 "*****************************************************************************
 "" Mappings
@@ -390,12 +406,37 @@ endif
 cnoremap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
 nnoremap <silent> <leader>b :Buffers<CR>
 nnoremap <silent> <leader>e :FZF -m<CR>
+"Recovery commands from history through FZF
+nmap <leader>y :History:<CR>
 
 " snippets
 let g:UltiSnipsExpandTrigger="<tab>"
 let g:UltiSnipsJumpForwardTrigger="<tab>"
 let g:UltiSnipsJumpBackwardTrigger="<c-b>"
 let g:UltiSnipsEditSplit="vertical"
+
+" ale
+let g:ale_fix_on_save = 1
+map <leader>f :ALEFix<CR>
+let g:ale_linters = {
+\  'javascript': ['eslint'],
+\  'typescript': ['tsserver', 'tslint'],
+\}
+let g:ale_fixers = {
+\  'javascript': ['prettier', 'eslint'],
+\  'typescript': ['prettier', 'tslint'],
+\  'css': ['prettier'],
+\  'scss': ['prettier'],
+\  'json': ['prettier'],
+\  'markdown': ['prettier'],
+\  'python': ['yapf'],
+\}
+let g:airline#extensions#ale#enabled = 1
+nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+nmap <silent> <C-j> <Plug>(ale_next_wrap)
+let g:ale_lint_on_text_changed = 'never'
+let g:ale_javascript_prettier_use_local_config = 1
+
 
 " Tagbar
 nmap <silent> <F4> :TagbarToggle<CR>
@@ -518,6 +559,10 @@ augroup go
 
 augroup END
 
+" ale
+:call extend(g:ale_linters, {
+    \"go": ['golint', 'go vet'], })
+
 
 " html
 " for html files, 2 spaces
@@ -530,7 +575,7 @@ let g:javascript_enable_domhtmlcss = 1
 " vim-javascript
 augroup vimrc-javascript
   autocmd!
-  autocmd FileType javascript set tabstop=2|set shiftwidth=2|set expandtab softtabstop=2
+  autocmd FileType javascript setl tabstop=4|setl shiftwidth=4|setl expandtab softtabstop=4
 augroup END
 
 
@@ -554,13 +599,67 @@ let g:jedi#show_call_signatures = "0"
 let g:jedi#completions_command = "<C-Space>"
 let g:jedi#smart_auto_mappings = 0
 
+" ale
+:call extend(g:ale_linters, {
+    \'python': ['flake8'], })
+
 " vim-airline
 let g:airline#extensions#virtualenv#enabled = 1
 
-" Syntax highlight
-" Default highlight is better than polyglot
-let g:polyglot_disabled = ['python']
-let python_highlight_all = 1
+
+" ruby
+let g:rubycomplete_buffer_loading = 1
+let g:rubycomplete_classes_in_global = 1
+let g:rubycomplete_rails = 1
+
+augroup vimrc-ruby
+  autocmd!
+  autocmd BufNewFile,BufRead *.rb,*.rbw,*.gemspec setlocal filetype=ruby
+  autocmd FileType ruby set tabstop=2|set shiftwidth=2|set expandtab softtabstop=2
+augroup END
+
+let g:tagbar_type_ruby = {
+    \ 'kinds' : [
+        \ 'm:modules',
+        \ 'c:classes',
+        \ 'd:describes',
+        \ 'C:contexts',
+        \ 'f:methods',
+        \ 'F:singleton methods'
+    \ ]
+\ }
+
+" RSpec.vim mappings
+map <Leader>t :call RunCurrentSpecFile()<CR>
+map <Leader>s :call RunNearestSpec()<CR>
+map <Leader>l :call RunLastSpec()<CR>
+map <Leader>a :call RunAllSpecs()<CR>
+
+" For ruby refactory
+if has('nvim')
+  runtime! macros/matchit.vim
+else
+  packadd! matchit
+endif
+
+" Ruby refactory
+nnoremap <leader>rap  :RAddParameter<cr>
+nnoremap <leader>rcpc :RConvertPostConditional<cr>
+nnoremap <leader>rel  :RExtractLet<cr>
+vnoremap <leader>rec  :RExtractConstant<cr>
+vnoremap <leader>relv :RExtractLocalVariable<cr>
+nnoremap <leader>rit  :RInlineTemp<cr>
+vnoremap <leader>rrlv :RRenameLocalVariable<cr>
+vnoremap <leader>rriv :RRenameInstanceVariable<cr>
+vnoremap <leader>rem  :RExtractMethod<cr>
+
+
+" scala
+
+
+" typescript
+let g:yats_host_keyword = 1
+
 
 
 "*****************************************************************************
@@ -610,30 +709,13 @@ else
   let g:airline_symbols.readonly = ''
   let g:airline_symbols.linenr = ''
 endif
-
-let g:deoplete#enable_at_startup = 1
 nnoremap <c-p> :FZF<cr>
-let g:NERDSpaceDelims = 1
-let g:NERDTrimTrailingWhitespace = 1
-
-" ale
-" ---
-let g:ale_fix_on_save = 0
-map <leader>f :ALEFix<CR>
-let g:ale_fixers = {
-\  'javascript': ['prettier', 'eslint'],
-\  'css': ['prettier'],
-\  'scss': ['prettier'],
-\  'json': ['prettier'],
-\  'markdown': ['prettier'],
-\}
-let g:airline#extensions#ale#enabled = 1
-nmap <silent> <C-k> <Plug>(ale_previous_wrap)
-nmap <silent> <C-j> <Plug>(ale_next_wrap)
-let g:ale_lint_on_text_changed = 'never'
-"let g:ale_lint_on_enter = 0
-
-let g:ale_javascript_prettier_use_local_config = 1
 
 " set mouse support
 set mouse=a
+
+let g:python_host_prog = '/Users/elli/.pyenv/versions/3.9.1/envs/neovim/bin/python'
+let g:python3_host_prog = '/Users/elli/.pyenv/versions/3.9.1/envs/neovim/bin/python'
+let g:deoplete#enable_at_startup = 1
+
+let g:vimspector_enable_mappings = 'HUMAN'
