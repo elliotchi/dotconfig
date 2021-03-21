@@ -44,18 +44,25 @@ Plug 'vim-scripts/CSApprox'
 Plug 'bronson/vim-trailing-whitespace'
 Plug 'Raimondi/delimitMate'
 Plug 'majutsushi/tagbar'
-Plug 'w0rp/ale'
-Plug 'Yggdroot/indentLine'
-Plug 'avelino/vim-bootstrap-updater'
+Plug 'dense-analysis/ale'
+Plug 'editor-bootstrap/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-rhubarb' " required by fugitive to :Gbrowse
 Plug 'scrooloose/nerdcommenter'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-jedi'
+Plug 'deoplete-plugins/deoplete-lsp'
 Plug 'ianks/vim-tsx'
 Plug 'editorconfig/editorconfig-vim'
+Plug 'cschlueter/vim-wombat'
+Plug 'neovim/nvim-lsp'
 Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-lua/lsp-status.nvim'
+Plug 'nvim-lua/completion-nvim'
 Plug 'puremourning/vimspector'
+Plug 'norcalli/nvim-colorizer.lua'
+Plug 'romgrk/barbar.nvim'
+Plug 'Yggdroot/indentLine'
 
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
@@ -80,6 +87,7 @@ Plug 'honza/vim-snippets'
 "" Color
 Plug 'morhetz/gruvbox'
 Plug 'enthudave/star_wars.vim'
+Plug 'junegunn/seoul256.vim'
 
 "*****************************************************************************
 "" Custom bundles
@@ -98,14 +106,15 @@ Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
 " html
 "" HTML Bundle
 Plug 'hail2u/vim-css3-syntax'
-Plug 'gorodinskiy/vim-coloresque'
+Plug 'gko/vim-coloresque'
 Plug 'tpope/vim-haml'
 Plug 'mattn/emmet-vim'
 
 
 " javascript
 "" Javascript Bundle
-Plug 'jelera/vim-javascript-syntax'
+Plug 'pangloss/vim-javascript'
+Plug 'MaxMEllon/vim-jsx-pretty'
 
 
 " python
@@ -120,6 +129,7 @@ Plug 'tpope/vim-rake'
 Plug 'tpope/vim-projectionist'
 Plug 'thoughtbot/vim-rspec'
 Plug 'ecomba/vim-ruby-refactoring'
+Plug 'tpope/vim-endwise'
 
 
 " scala
@@ -163,9 +173,9 @@ set fileencodings=utf-8
 set backspace=indent,eol,start
 
 "" Tabs. May be overridden by autocmd rules
-set tabstop=4
+set tabstop=2
 set softtabstop=0
-set shiftwidth=4
+set shiftwidth=2
 set expandtab
 
 "" Map leader to ,
@@ -202,6 +212,7 @@ set ruler
 set number
 
 let no_buffers_menu=1
+let g:seoul256_background = 233
 " set background=dark
 
 silent! colorscheme star_wars
@@ -406,6 +417,7 @@ endif
 cnoremap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
 nnoremap <silent> <leader>b :Buffers<CR>
 nnoremap <silent> <leader>e :FZF -m<CR>
+nnoremap <C-f> :Rg<Cr>
 "Recovery commands from history through FZF
 nmap <leader>y :History:<CR>
 
@@ -420,11 +432,15 @@ let g:ale_fix_on_save = 1
 map <leader>f :ALEFix<CR>
 let g:ale_linters = {
 \  'javascript': ['eslint'],
-\  'typescript': ['tsserver', 'tslint'],
+\  'javascriptreact': ['eslint'],
+\  'typescript': ['tsserver', 'eslint'],
+\  'typescriptreact': ['tsserver', 'eslint'],
 \}
 let g:ale_fixers = {
 \  'javascript': ['prettier', 'eslint'],
-\  'typescript': ['prettier', 'tslint'],
+\  'javascriptreact': ['prettier', 'eslint'],
+\  'typescript': ['prettier', 'eslint'],
+\  'typescriptreact': ['prettier', 'eslint'],
 \  'css': ['prettier'],
 \  'scss': ['prettier'],
 \  'json': ['prettier'],
@@ -575,9 +591,8 @@ let g:javascript_enable_domhtmlcss = 1
 " vim-javascript
 augroup vimrc-javascript
   autocmd!
-  autocmd FileType javascript setl tabstop=4|setl shiftwidth=4|setl expandtab softtabstop=4
+  autocmd FileType javascript setl tabstop=2|setl shiftwidth=2|setl expandtab softtabstop=2
 augroup END
-
 
 " python
 " vim-python
@@ -714,8 +729,62 @@ nnoremap <c-p> :FZF<cr>
 " set mouse support
 set mouse=a
 
-let g:python_host_prog = '/Users/elli/.pyenv/versions/3.9.1/envs/neovim/bin/python'
-let g:python3_host_prog = '/Users/elli/.pyenv/versions/3.9.1/envs/neovim/bin/python'
+let g:python_host_prog = '/Users/elliot/.pyenv/versions/3.9.1/envs/neovim/bin/python'
+let g:python3_host_prog = '/Users/elliot/.pyenv/versions/3.9.1/envs/neovim/bin/python'
 let g:deoplete#enable_at_startup = 1
 
 let g:vimspector_enable_mappings = 'HUMAN'
+
+set termguicolors
+" lsp
+:lua << EOF
+  local nvim_lsp = require('lspconfig')
+  vim.lsp.set_log_level('debug')
+
+  local on_attach = function(_, bufnr)
+    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+    vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+      vim.lsp.diagnostic.on_publish_diagnostics, {
+        -- disable virtual text
+        virtual_text = false,
+
+        -- show signs
+        signs = true,
+
+        -- delay update diagnostics
+        update_in_insert = false,
+      }
+    )
+    require'completion'.on_attach()
+
+    -- Mappings.
+    local opts = { noremap=true, silent=true }
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<Cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<Cmd>lua vim.lsp.buf.hover()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>e', '<cmd>lua vim.lsp.util.show_line_diagnostics()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+  end
+
+  local servers = {'tsserver', 'solargraph'}
+  for _, lsp in ipairs(servers) do
+    nvim_lsp[lsp].setup {
+      on_attach = on_attach,
+    }
+  end
+
+  require('colorizer').setup()
+EOF
+
+let g:NERDSpaceDelims = 1
+let g:NERDTrimTrailingWhitespace = 1
