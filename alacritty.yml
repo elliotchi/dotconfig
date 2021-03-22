@@ -1,0 +1,20 @@
+window:
+  dimensions:
+    columns: 300
+    lines: 80
+draw_bold_text_with_bright_colors: true
+font:
+  normal:
+    family:
+      Operator Mono Lig
+    style: Book
+  bold:
+    family:
+      Operator Mono Lig
+    style: Medium
+  italic:
+    family: Operator Mono Lig
+    style: Book Italic
+  size: 12.0
+  use_thin_strokes: true
+live_config_reload: true
